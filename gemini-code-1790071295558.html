@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendaftaran Sertifikasi — LBH Cakra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:#F6EFDC;
+    --parchment-deep:#EFE4C6;
+    --ink:#241608;
+    --ink-soft:#4A3A24;
+    --gold:#B8860B;
+    --gold-bright:#D8A93B;
+    --gold-line:#C9A34E;
+    --maroon:#7A1420;
+    --card:#FFFDF6;
+    --ok:#3E6B3A;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(184,134,11,0.10), transparent 60%),
+      var(--parchment);
+    color:var(--ink);
+    font-family:'Source Sans 3', sans-serif;
+    line-height:1.55;
+  }
+  h1,h2,h3, .display{
+    font-family:'Spectral', serif;
+    color:var(--ink);
+    margin:0;
+  }
+  .ornament-rule{
+    height:1px;
+    background:linear-gradient(to right, transparent, var(--gold-line) 15%, var(--gold-line) 85%, transparent);
+    position:relative;
+    margin:0 auto;
+  }
+  .ornament-rule::before{
+    content:"◆";
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    background:var(--parchment);
+    color:var(--gold);
+    padding:0 12px;
+    font-size:11px;
+  }
+
+  header{
+    padding:56px 24px 40px;
+    text-align:center;
+  }
+  .eyebrow{
+    letter-spacing:.14em;
+    font-size:12.5px;
+    color:var(--maroon);
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  header h1{
+    font-size:clamp(26px,4vw,40px);
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  header p.lede{
+    max-width:520px;
+    margin:14px auto 0;
+    color:var(--ink-soft);
+    font-size:15.5px;
+  }
+  .rule-wrap{width:260px;margin:24px auto 0;}
+
+  main{
+    max-width:880px;
+    margin:0 auto;
+    padding:0 20px 90px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--gold-line);
+    box-shadow:0 1px 0 rgba(184,134,11,.25), 0 18px 40px -22px rgba(36,22,8,.35);
+  }
+  .form-card{padding:40px clamp(20px,5vw,56px);}
+  section.form-section + section.form-section{
+    margin-top:34px;
+    padding-top:34px;
+    border-top:1px dashed rgba(184,134,11,.35);
+  }
+  .section-title{
+    font-size:13px;
+    letter-spacing:.08em;
+    color:var(--maroon);
+    font-weight:600;
+    margin-bottom:18px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px 24px;
+  }
+  .grid .span-2{grid-column:1/-1;}
+  @media(max-width:600px){ .grid{grid-template-columns:1fr;} }
+
+  label{
+    display:block;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  label .opt{font-weight:400;color:var(--ink-soft);font-size:12.5px;}
+  input[type=text], input[type=tel], input[type=email], select, textarea{
+    width:100%;
+    padding:11px 13px;
+    font-family:inherit;
+    font-size:15px;
+    color:var(--ink);
+    background:#fff;
+    border:1px solid #D9C9A0;
+    border-radius:2px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  textarea{resize:vertical;min-height:88px;}
+  input:focus, select:focus, textarea:focus{
+    outline:none;
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(184,134,11,.18);
+  }
+  .radio-row{display:flex;gap:22px;padding-top:6px;}
+  .radio-row label{
+    display:flex;align-items:center;gap:8px;
+    font-weight:400;font-size:15px;margin-bottom:0;cursor:pointer;
+  }
+  .radio-row input{width:16px;height:16px;accent-color:var(--maroon);}
+
+  .field-error{
+    display:none;
+    color:var(--maroon);
+    font-size:12.5px;
+    margin-top:5px;
+  }
+  .invalid input, .invalid select, .invalid textarea{border-color:var(--maroon);}
+  .invalid .field-error{display:block;}
+
+  .submit-row{
+    margin-top:38px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+  button{
+    font-family:'Source Sans 3', sans-serif;
+    cursor:pointer;
+    border:none;
+  }
+  .btn-primary{
+    background:var(--maroon);
+    color:var(--parchment);
+    padding:13px 32px;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:.02em;
+    border-radius:2px;
+    transition:background .15s, transform .1s;
+  }
+  .btn-primary:hover{background:#5F0F19;}
+  .btn-primary:disabled{background:#8c5960;cursor:not-allowed;}
+  .submit-status{font-size:14px;color:var(--ink-soft);}
+  .submit-status.ok{color:var(--ok);font-weight:600;}
+  .submit-status.err{color:var(--maroon);font-weight:600;}
+
+  footer{
+    text-align:center;
+    padding:26px 20px 50px;
+    color:var(--ink-soft);
+    font-size:13px;
+  }
+  footer .star{color:var(--maroon);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">LEMBAGA BANTUAN HUKUM CAKRA</div>
+  <h1>Pendaftaran Sertifikasi</h1>
+  <p class="lede">Silakan isi formulir di bawah ini. Data pendaftaran akan otomatis terkirim dan tersimpan ke Google Sheets.</p>
+  <div class="rule-wrap"><div class="ornament-rule"></div></div>
+</header>
+
+<main>
+  <form class="card form-card" id="regForm" novalidate>
+    <section class="form-section">
+      <div class="section-title">DATA DIRI</div>
+      <div class="grid">
+        <div class="span-2">
+          <label for="nama">Nama Lengkap</label>
+          <input type="text" id="nama" name="nama" placeholder="Sesuai KTP" required>
+          <div class="field-error">Nama lengkap wajib diisi.</div>
+        </div>
+
+        <div>
+          <label for="nik">NIK</label>
+          <input type="text" id="nik" name="nik" inputmode="numeric" maxlength="16" placeholder="16 digit angka" required>
+          <div class="field-error">NIK harus berupa 16 digit angka.</div>
+        </div>
+
+        <div>
+          <label for="ttl">Tempat, Tanggal Lahir</label>
+          <input type="text" id="ttl" name="ttl" placeholder="Contoh: Jakarta, 12 Mei 1998" required>
+          <div class="field-error">Tempat, tanggal lahir wajib diisi.</div>
+        </div>
+
+        <div class="span-2">
+          <label>Jenis Kelamin</label>
+          <div class="radio-row">
+            <label><input type="radio" name="gender" value="Laki-laki" required> Laki-laki</label>
+            <label><input type="radio" name="gender" value="Perempuan"> Perempuan</label>
+          </div>
+          <div class="field-error">Pilih salah satu jenis kelamin.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="section-title">KONTAK &amp; ALAMAT</div>
+      <div class="grid">
+        <div class="span-2">
+          <label for="alamat">Alamat Lengkap</label>
+          <textarea id="alamat" name="alamat" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten" required></textarea>
+          <div class="field-error">Alamat lengkap wajib diisi.</div>
+        </div>
+        <div>
+          <label for="telp">No. Telepon / WhatsApp</label>
+          <input type="tel" id="telp" name="telp" placeholder="08xx-xxxx-xxxx" required>
+          <div class="field-error">Nomor telepon wajib diisi.</div>
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="nama@email.com" required>
+          <div class="field-error">Format email tidak valid.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="section-title">LATAR BELAKANG</div>
+      <div class="grid">
+        <div>
+          <label for="pendidikan">Pendidikan Terakhir</label>
+          <select id="pendidikan" name="pendidikan" required>
+            <option value="" disabled selected>Pilih jenjang</option>
+            <option>SMA/SMK</option>
+            <option>D3</option>
+            <option>S1</option>
+            <option>S2</option>
+            <option>S3</option>
+            <option>Lainnya</option>
+          </select>
+          <div class="field-error">Pendidikan terakhir wajib dipilih.</div>
+        </div>
+        <div>
+          <label for="pekerjaan">Pekerjaan / Profesi <span class="opt">(opsional)</span></label>
+          <input type="text" id="pekerjaan" name="pekerjaan" placeholder="Contoh: Advokat, Mahasiswa">
+        </div>
+        <div class="span-2">
+          <label for="sertifikasi">Sertifikasi / Pelatihan</label>
+          <select id="sertifikasi" name="sertifikasi" required>
+            <option value="" disabled selected>Pilih</option>
+            <option>Paralegal</option>
+            <option>Brevet Pajak</option>
+            <option>PKPA</option>
+            <option>UPA</option>
+            <option>Jurnalistik</option>
+            <option>Lainnya</option>
+          </select>
+          <div class="field-error">Sertifikasi / pelatihan wajib dipilih.</div>
+        </div>
+        <div class="span-2">
+          <label for="motivasi">Motivasi Mendaftar</label>
+          <textarea id="motivasi" name="motivasi" placeholder="Ceritakan singkat motivasi Anda mendaftar sertifikasi ini" required></textarea>
+          <div class="field-error">Motivasi mendaftar wajib diisi.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="submit-row">
+      <button type="submit" id="submitBtn" class="btn-primary">Daftar Sekarang</button>
+      <span class="submit-status" id="submitStatus"></span>
+    </div>
+  </form>
+</main>
+
+<footer>
+  <span class="star">★</span> LBH Cakra — Lembaga Bantuan Hukum
+</footer>
+
+<script>
+(function(){
+  // URL Web App Google Apps Script milik Anda
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEHGz80KXRG0ElAl_0nIlWGE3SVda6OT9O1olIO48MO4MJTk7dTSIGxIw-YbrUnm-A/exec";
+
+  const form = document.getElementById('regForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const submitStatus = document.getElementById('submitStatus');
+
+  const requiredFields = ['nama','nik','ttl','alamat','telp','email','pendidikan','sertifikasi','motivasi'];
+
+  function clearErrors(){
+    form.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+  }
+
+  function markInvalid(el){
+    const wrap = el.closest('div') || el.parentElement;
+    wrap.classList.add('invalid');
+  }
+
+  function validate(data){
+    let valid = true;
+    let firstInvalidEl = null;
+
+    requiredFields.forEach(name => {
+      const el = form.querySelector('[name="'+name+'"]');
+      if(!data[name] || !String(data[name]).trim()){
+        markInvalid(el);
+        if(!firstInvalidEl) firstInvalidEl = el;
+        valid = false;
+      }
+    });
+
+    if(data.nik && !/^\d{16}$/.test(data.nik.trim())){
+      const el = form.querySelector('[name="nik"]');
+      markInvalid(el);
+      if(!firstInvalidEl) firstInvalidEl = el;
+      valid = false;
+    }
+
+    if(data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())){
+      const el = form.querySelector('[name="email"]');
+      markInvalid(el);
+      if(!firstInvalidEl) firstInvalidEl = el;
+      valid = false;
+    }
+
+    if(!data.gender){
+      const genderEl = form.querySelector('input[name="gender"]');
+      const row = genderEl.closest('.grid > .span-2') || genderEl.closest('.span-2');
+      row.classList.add('invalid');
+      if(!firstInvalidEl) firstInvalidEl = genderEl;
+      valid = false;
+    }
+
+    return { valid, firstInvalidEl };
+  }
+
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    clearErrors();
+    submitStatus.textContent = '';
+    submitStatus.className = 'submit-status';
+
+    const fd = new FormData(form);
+    const data = {
+      nama: fd.get('nama')?.trim() || '',
+      nik: fd.get('nik')?.trim() || '',
+      ttl: fd.get('ttl')?.trim() || '',
+      gender: fd.get('gender') || '',
+      alamat: fd.get('alamat')?.trim() || '',
+      telp: fd.get('telp')?.trim() || '',
+      email: fd.get('email')?.trim() || '',
+      pendidikan: fd.get('pendidikan') || '',
+      pekerjaan: fd.get('pekerjaan')?.trim() || '',
+      sertifikasi: fd.get('sertifikasi') || '',
+      motivasi: fd.get('motivasi')?.trim() || '',
+      tanggal: new Date().toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'})
+    };
+
+    const result = validate(data);
+    if(!result.valid){
+      submitStatus.textContent = 'Mohon periksa dan lengkapi kolom yang ditandai merah.';
+      submitStatus.classList.add('err');
+      if(result.firstInvalidEl) result.firstInvalidEl.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitStatus.textContent = 'Menyimpan data ke Google Sheets...';
+
+    // Menggunakan URLSearchParams agar pengiriman data stabil & anti-CORS
+    const payload = new URLSearchParams();
+    for (const key in data) {
+      payload.append(key, data[key]);
+    }
+
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      body: payload
+    })
+    .then(() => {
+      form.reset();
+      submitStatus.textContent = 'Pendaftaran berhasil dikirim dan tersimpan otomatis ke Google Sheets!';
+      submitStatus.classList.add('ok');
+    })
+    .catch(err => {
+      submitStatus.textContent = 'Terjadi kendala saat mengirim data. Silakan coba lagi.';
+      submitStatus.classList.add('err');
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
