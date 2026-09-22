@@ -117,7 +117,7 @@
     margin-bottom:6px;
   }
   label .opt{font-weight:400;color:var(--ink-soft);font-size:12.5px;}
-  input[type=text], input[type=tel], input[type=email], select, textarea{
+  input[type=text], input[type=tel], input[type=email], input[type=file], select, textarea{
     width:100%;
     padding:11px 13px;
     font-family:inherit;
@@ -192,7 +192,7 @@
 <header>
   <div class="eyebrow">LEMBAGA BANTUAN HUKUM CAKRA</div>
   <h1>Pendaftaran Sertifikasi</h1>
-  <p class="lede">Silakan isi formulir di bawah ini. Data pendaftaran akan otomatis terkirim dan tersimpan ke Google Sheets.</p>
+  <p class="lede">Silakan isi formulir di bawah ini. Data pendaftaran dan berkas akan otomatis tersimpan ke Google Sheets.</p>
   <div class="rule-wrap"><div class="ornament-rule"></div></div>
 </header>
 
@@ -292,6 +292,22 @@
       </div>
     </section>
 
+    <section class="form-section">
+      <div class="section-title">LAMPIRAN BERKAS</div>
+      <div class="grid">
+        <div>
+          <label for="pasfoto">Pasfoto (Background Polos)</label>
+          <input type="file" id="pasfoto" name="pasfoto" accept="image/*" required>
+          <div class="field-error">Pasfoto wajib diunggah.</div>
+        </div>
+        <div>
+          <label for="buktiBayar">Bukti Transfer Payment</label>
+          <input type="file" id="buktiBayar" name="buktiBayar" accept="image/*,.pdf" required>
+          <div class="field-error">Bukti transfer wajib diunggah.</div>
+        </div>
+      </div>
+    </section>
+
     <div class="submit-row">
       <button type="submit" id="submitBtn" class="btn-primary">Daftar Sekarang</button>
       <span class="submit-status" id="submitStatus"></span>
@@ -305,8 +321,8 @@
 
 <script>
 (function(){
-  // URL Web App Google Apps Script milik Anda
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEHGz80KXRG0ElAl_0nIlWGE3SVda6OT9O1olIO48MO4MJTk7dTSIGxIw-YbrUnm-A/exec";
+  // URL Deployment Web App Apps Script terbaru
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVfSCvbsQNQmEVPl9FyM-9on21aufN9Ptr1EdPrauo8l2P1INk6xx_WKsJAbnEvlyR/exec";
 
   const form = document.getElementById('regForm');
   const submitBtn = document.getElementById('submitBtn');
@@ -323,7 +339,23 @@
     wrap.classList.add('invalid');
   }
 
-  function validate(data){
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      if (!file) {
+        resolve({ fileName: '', base64: '', mimeType: '' });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Data = reader.result.split(',')[1];
+        resolve({ fileName: file.name, mimeType: file.type, base64: base64Data });
+      };
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function validate(data, pasfotoFile, buktiBayarFile){
     let valid = true;
     let firstInvalidEl = null;
 
@@ -358,16 +390,36 @@
       valid = false;
     }
 
+    if(!pasfotoFile){
+      const el = document.getElementById('pasfoto');
+      markInvalid(el);
+      if(!firstInvalidEl) firstInvalidEl = el;
+      valid = false;
+    }
+
+    if(!buktiBayarFile){
+      const el = document.getElementById('buktiBayar');
+      markInvalid(el);
+      if(!firstInvalidEl) firstInvalidEl = el;
+      valid = false;
+    }
+
     return { valid, firstInvalidEl };
   }
 
-  form.addEventListener('submit', function(ev){
+  form.addEventListener('submit', async function(ev){
     ev.preventDefault();
     clearErrors();
     submitStatus.textContent = '';
     submitStatus.className = 'submit-status';
 
     const fd = new FormData(form);
+    const pasfotoInput = document.getElementById('pasfoto');
+    const buktiBayarInput = document.getElementById('buktiBayar');
+
+    const pasfotoFile = pasfotoInput.files[0];
+    const buktiBayarFile = buktiBayarInput.files[0];
+
     const data = {
       nama: fd.get('nama')?.trim() || '',
       nik: fd.get('nik')?.trim() || '',
@@ -379,11 +431,10 @@
       pendidikan: fd.get('pendidikan') || '',
       pekerjaan: fd.get('pekerjaan')?.trim() || '',
       sertifikasi: fd.get('sertifikasi') || '',
-      motivasi: fd.get('motivasi')?.trim() || '',
-      tanggal: new Date().toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'})
+      motivasi: fd.get('motivasi')?.trim() || ''
     };
 
-    const result = validate(data);
+    const result = validate(data, pasfotoFile, buktiBayarFile);
     if(!result.valid){
       submitStatus.textContent = 'Mohon periksa dan lengkapi kolom yang ditandai merah.';
       submitStatus.classList.add('err');
@@ -392,30 +443,53 @@
     }
 
     submitBtn.disabled = true;
-    submitStatus.textContent = 'Menyimpan data ke Google Sheets...';
+    submitStatus.textContent = 'Mengunggah berkas & menyimpan data...';
 
-    // Menggunakan URLSearchParams agar pengiriman data stabil & anti-CORS
-    const payload = new URLSearchParams();
-    for (const key in data) {
-      payload.append(key, data[key]);
-    }
+    try {
+      const pasfotoData = await fileToBase64(pasfotoFile);
+      const buktiBayarData = await fileToBase64(buktiBayarFile);
 
-    fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      body: payload
-    })
-    .then(() => {
+      const payload = {
+        ...data,
+        pasfotoName: pasfotoData.fileName,
+        pasfotoBase64: pasfotoData.base64,
+        pasfotoMime: pasfotoData.mimeType,
+        buktiBayarName: buktiBayarData.fileName,
+        buktiBayarBase64: buktiBayarData.base64,
+        buktiBayarMime: buktiBayarData.mimeType
+      };
+
+      // Mengirimkan JSON payload via POST dengan Content-Type text/plain untuk menghindari batasan CORS Preflight
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const resText = await response.text();
+      let resJson;
+      try {
+        resJson = JSON.parse(resText);
+      } catch(e) {
+        resJson = { status: 'success' };
+      }
+
+      if(resJson.status === 'error') {
+        throw new Error(resJson.message);
+      }
+
       form.reset();
-      submitStatus.textContent = 'Pendaftaran berhasil dikirim dan tersimpan otomatis ke Google Sheets!';
+      submitStatus.textContent = 'Pendaftaran & unggah berkas berhasil tersimpan!';
       submitStatus.classList.add('ok');
-    })
-    .catch(err => {
+    } catch (err) {
+      console.error(err);
       submitStatus.textContent = 'Terjadi kendala saat mengirim data. Silakan coba lagi.';
       submitStatus.classList.add('err');
-    })
-    .finally(() => {
+    } finally {
       submitBtn.disabled = false;
-    });
+    }
   });
 })();
 </script>
