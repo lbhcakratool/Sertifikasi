@@ -150,6 +150,52 @@
   .invalid input, .invalid select, .invalid textarea{border-color:var(--maroon);}
   .invalid .field-error{display:block;}
 
+  /* Box Informasi Rekening Pembayaran */
+  .bank-box {
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: #FDFBF4;
+    border: 1px solid var(--gold-line);
+    border-radius: 4px;
+    font-size: 13.5px;
+  }
+  .bank-title {
+    font-weight: 600;
+    color: var(--maroon);
+    margin-bottom: 4px;
+  }
+  .bank-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .bank-acc {
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    background: #EFE4C6;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+  .btn-copy {
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .btn-copy:hover {
+    background: var(--maroon);
+  }
+
   .submit-row{
     margin-top:38px;
     display:flex;
@@ -280,10 +326,18 @@
             <option>PKPA</option>
             <option>UPA</option>
             <option>Jurnalistik</option>
-            <option>Lainnya</option>
+            <option value="Lainnya">Lainnya</option>
           </select>
           <div class="field-error">Sertifikasi / pelatihan wajib dipilih.</div>
         </div>
+        
+        <!-- Input tambahan jika memilih "Lainnya" -->
+        <div class="span-2" id="sertifikasiLainnyaWrap" style="display: none;">
+          <label for="sertifikasiLainnya">Sebutkan Sertifikasi / Pelatihan Lainnya</label>
+          <input type="text" id="sertifikasiLainnya" name="sertifikasiLainnya" placeholder="Tulis nama sertifikasi/pelatihan...">
+          <div class="field-error">Mohon sebutkan jenis sertifikasi/pelatihan.</div>
+        </div>
+
         <div class="span-2">
           <label for="motivasi">Motivasi Mendaftar</label>
           <textarea id="motivasi" name="motivasi" placeholder="Ceritakan singkat motivasi Anda mendaftar sertifikasi ini" required></textarea>
@@ -304,6 +358,16 @@
           <label for="buktiBayar">Bukti Transfer Payment</label>
           <input type="file" id="buktiBayar" name="buktiBayar" accept="image/*,.pdf" required>
           <div class="field-error">Bukti transfer wajib diunggah.</div>
+
+          <!-- Box Rekening Bank BTN -->
+          <div class="bank-box">
+            <div class="bank-title">Rekening Pembayaran:</div>
+            <div><strong>Bank BTN</strong> a.n. Perjuangan Adil Dirgantara</div>
+            <div class="bank-row">
+              <span class="bank-acc" id="norekText">50901880001074</span>
+              <button type="button" class="btn-copy" id="btnCopyNorek">Salin No. Rekening</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -321,12 +385,43 @@
 
 <script>
 (function(){
-  // URL Deployment Web App Apps Script terbaru
+  // URL Deployment Web App Apps Script
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVfSCvbsQNQmEVPl9FyM-9on21aufN9Ptr1EdPrauo8l2P1INk6xx_WKsJAbnEvlyR/exec";
 
   const form = document.getElementById('regForm');
   const submitBtn = document.getElementById('submitBtn');
   const submitStatus = document.getElementById('submitStatus');
+
+  const sertifikasiSelect = document.getElementById('sertifikasi');
+  const sertifikasiLainnyaWrap = document.getElementById('sertifikasiLainnyaWrap');
+  const sertifikasiLainnyaInput = document.getElementById('sertifikasiLainnya');
+
+  const btnCopyNorek = document.getElementById('btnCopyNorek');
+  const norekText = document.getElementById('norekText').innerText;
+
+  // Fitur Salin No Rekening
+  btnCopyNorek.addEventListener('click', function(){
+    navigator.clipboard.writeText(norekText).then(() => {
+      btnCopyNorek.textContent = 'Tersalin!';
+      setTimeout(() => {
+        btnCopyNorek.textContent = 'Salin No. Rekening';
+      }, 2000);
+    }).catch(() => {
+      alert('Gagal menyalin. Silakan salin manual: ' + norekText);
+    });
+  });
+
+  // Tampilkan/Sembunyikan Input Sertifikasi "Lainnya"
+  sertifikasiSelect.addEventListener('change', function(){
+    if(this.value === 'Lainnya'){
+      sertifikasiLainnyaWrap.style.display = 'block';
+      sertifikasiLainnyaInput.required = true;
+    } else {
+      sertifikasiLainnyaWrap.style.display = 'none';
+      sertifikasiLainnyaInput.required = false;
+      sertifikasiLainnyaInput.value = '';
+    }
+  });
 
   const requiredFields = ['nama','nik','ttl','alamat','telp','email','pendidikan','sertifikasi','motivasi'];
 
@@ -367,6 +462,12 @@
         valid = false;
       }
     });
+
+    if(data.sertifikasi === 'Lainnya' && !sertifikasiLainnyaInput.value.trim()){
+      markInvalid(sertifikasiLainnyaInput);
+      if(!firstInvalidEl) firstInvalidEl = sertifikasiLainnyaInput;
+      valid = false;
+    }
 
     if(data.nik && !/^\d{16}$/.test(data.nik.trim())){
       const el = form.querySelector('[name="nik"]');
@@ -420,6 +521,12 @@
     const pasfotoFile = pasfotoInput.files[0];
     const buktiBayarFile = buktiBayarInput.files[0];
 
+    // Jika memilih "Lainnya", kirim teks dari sertifikasiLainnya Input
+    let sertifikasiValue = fd.get('sertifikasi') || '';
+    if(sertifikasiValue === 'Lainnya'){
+      sertifikasiValue = 'Lainnya: ' + (fd.get('sertifikasiLainnya')?.trim() || '');
+    }
+
     const data = {
       nama: fd.get('nama')?.trim() || '',
       nik: fd.get('nik')?.trim() || '',
@@ -430,7 +537,7 @@
       email: fd.get('email')?.trim() || '',
       pendidikan: fd.get('pendidikan') || '',
       pekerjaan: fd.get('pekerjaan')?.trim() || '',
-      sertifikasi: fd.get('sertifikasi') || '',
+      sertifikasi: sertifikasiValue,
       motivasi: fd.get('motivasi')?.trim() || ''
     };
 
@@ -459,7 +566,6 @@
         buktiBayarMime: buktiBayarData.mimeType
       };
 
-      // Mengirimkan JSON payload via POST dengan Content-Type text/plain untuk menghindari batasan CORS Preflight
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         headers: {
@@ -481,6 +587,7 @@
       }
 
       form.reset();
+      sertifikasiLainnyaWrap.style.display = 'none';
       submitStatus.textContent = 'Pendaftaran & unggah berkas berhasil tersimpan!';
       submitStatus.classList.add('ok');
     } catch (err) {
